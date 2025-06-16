@@ -7,7 +7,7 @@ name = "magic-state-cultivation"
 version = "0.1.0"
 description = "Code for the paper 'Magic state cultivation: growing T states as cheap as CNOT gates'"
 authors = [
-    { name = "Strilanc", email = "noreply@github.com" }
+    { name = "Craig Gidney", email = "craig.gidney@gmail.com" }
 ]
 license = { file = "LICENSE" }
 readme = "README.md"
