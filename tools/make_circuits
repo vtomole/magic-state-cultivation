@@ -12,7 +12,6 @@ sys.path.append(str(src_path))
 import cultiv
 import gen
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--basis', nargs='+', choices=['X', 'Y', 'Z', 'EPR'], required=True)
@@ -123,41 +122,74 @@ def main():
             r1 = None
             v = None
             r2 = None
-            d1 = None
+            d1 = None 
+        elif circuit_type == 'folded-transversal':
+            circuit = cultiv.make_folded_transversal_circuit(
+                noise_strength=noise_strength,
+                dfinal=d2,
+                ghz_size=d1,
+                latter_rounds=r2,
+                prep='hookinj',
+                ps_on_d3=1, 
+            )
         else:
             raise NotImplementedError(f'{circuit_type=}')
 
         if args.debug:
             gen.write_file(out_dir / 'debug-circuit.html', gen.stim_circuit_html_viewer(circuit))
+        
+        if circuit_type != 'folded-transversal':
+            if gateset == 'cz':
+                noise = 'si1000'
+                circuit = gen.transpile_to_z_basis_interaction_circuit(circuit)
+                noise_model = gen.NoiseModel.si1000(noise_strength)
+            else:
+                noise = 'uniform'
+                noise_model = gen.NoiseModel.uniform_depolarizing(noise_strength)
+            noisy_circuit = noise_model.noisy_circuit_skipping_mpp_boundaries(circuit)
 
-        if gateset == 'cz':
-            noise = 'si1000'
-            circuit = gen.transpile_to_z_basis_interaction_circuit(circuit)
-            noise_model = gen.NoiseModel.si1000(noise_strength)
+            metadata = {
+                'c': circuit_type,
+                'p': noise_strength,
+                'noise': noise,
+                'g': gateset,
+                'q': noisy_circuit.num_qubits,
+                'b': basis,
+                'r': gen.count_measurement_layers(circuit),
+                'r1': r1 or None,
+                'd1': d1 or None,
+                'r2': r2 or None,
+                'd2': d2 or None,
+                'v': v or None,
+            }
+            metadata = {k: v for k, v in metadata.items() if v is not None}
+            meta_str = ','.join(f'{k}={v}' for k, v in metadata.items())
+            circuit_path = out_dir / f'{meta_str}.stim'
+            noisy_circuit.to_file(circuit_path)
+            print(f'wrote {circuit_path}')
         else:
             noise = 'uniform'
-            noise_model = gen.NoiseModel.uniform_depolarizing(noise_strength)
-        noisy_circuit = noise_model.noisy_circuit_skipping_mpp_boundaries(circuit)
-
-        metadata = {
-            'c': circuit_type,
-            'p': noise_strength,
-            'noise': noise,
-            'g': gateset,
-            'q': noisy_circuit.num_qubits,
-            'b': basis,
-            'r': gen.count_measurement_layers(circuit),
-            'r1': r1 or None,
-            'd1': d1 or None,
-            'r2': r2 or None,
-            'd2': d2 or None,
-            'v': v or None,
-        }
-        metadata = {k: v for k, v in metadata.items() if v is not None}
-        meta_str = ','.join(f'{k}={v}' for k, v in metadata.items())
-        circuit_path = out_dir / f'{meta_str}.stim'
-        noisy_circuit.to_file(circuit_path)
-        print(f'wrote {circuit_path}')
+            print(type(circuit))
+            metadata = {
+                'c': circuit_type,
+                'p': noise_strength,
+                'noise': noise,
+                'g': gateset,
+                'q': circuit.num_qubits,
+                'b': basis,
+                'r': gen.count_measurement_layers(circuit),
+                'r1': r1 or None,
+                'd1': d1 or None,
+                'r2': r2 or None,
+                'd2': d2 or None,
+                'v': v or None,
+            }
+        
+            metadata = {k: v for k, v in metadata.items() if v is not None}
+            meta_str = ','.join(f'{k}={v}' for k, v in metadata.items())
+            circuit_path = out_dir / f'{meta_str}.stim'
+            circuit.to_file(circuit_path)
+            print(f'wrote {circuit_path}')
 
 
 if __name__ == '__main__':
