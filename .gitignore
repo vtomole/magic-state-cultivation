@@ -5,3 +5,5 @@ __pycache__/
 tmp.html
 tmp.svg
 tmp.csv
+
+.DS_Store
