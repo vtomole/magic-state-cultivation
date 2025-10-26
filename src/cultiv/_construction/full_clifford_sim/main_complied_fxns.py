@@ -1,9 +1,7 @@
 import stim
-from .coords import *
-from .full_circuit_fxns import *
-from .s3_fxns import *
+from typing import List
+from .full_circuit_fxns import FullCircuit
 from .noise_model import insert_circuit_errs
-from .ug_coords import *
 
 def full_circuit(nm: float, 
                  dfinal: int, 

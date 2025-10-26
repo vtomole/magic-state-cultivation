@@ -7,11 +7,7 @@ from typing import List, Callable, Tuple
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
-from .coords import *
-from .full_circuit_fxns import *
-from .s3_fxns import *
-from .main_complied_fxns import *
-from .gap_sampler import *
+from .main_complied_fxns import full_circuit
 
 
 if __name__ == '__main__':

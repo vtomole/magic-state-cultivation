@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import stim
-from .coords import *
-from .ghz_fxns import *
-from .s3_fxns import *
+from .coords import RotSurfCodeCoords
+from .ghz_fxns import GHZstate
+from .s3_fxns import CultStage
 
 @dataclass
 class FullCircuit:

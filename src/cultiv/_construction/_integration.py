@@ -13,8 +13,7 @@ from ._escape_stage import \
 from ._injection_stage import injection_circuit_with_rewritten_injection_rotation
 from ._surface_code import make_surface_code_idle_chunk, make_surface_code
 
-from .full_clifford_sim.gap_sampler import *
-from .full_clifford_sim.main_complied_fxns import *
+from .full_clifford_sim.main_complied_fxns import full_circuit
 
 def make_escape_to_big_matchable_code_circuit(
         *,

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import stim
-from .coords import *
-import json
+import numpy as np
 from itertools import chain
 
 def flatten(xss):

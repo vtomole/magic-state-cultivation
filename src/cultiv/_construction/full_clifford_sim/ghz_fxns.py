@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import stim
-from .coords import *
+import numpy as np
 
 @dataclass
 class GHZstate:
