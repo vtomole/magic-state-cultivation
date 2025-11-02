@@ -297,7 +297,7 @@ class CultStage:
     
 
     def d3_rotmeas(self, prev=False, onlylasttwo:bool=False) -> stim.Circuit:
-        "do stab meas at rot 3 and then grow to reg 3"
+        "do the first 2 steps of stabilizer measurement at rot 3 and then you are in reg 3"
 
         hi_circ = stim.Circuit()
         bdry_ancillas = self.bdry_ancillas
@@ -438,7 +438,7 @@ class CultStage:
         return hi_circ
     
 
-    def d3reg_stabmsmt(self) -> stim.Circuit:
+    def d3_rotated_to_d5_stabmsmt(self) -> stim.Circuit:
         "do stab msmt on d3 unrotated -> right now configured to be noiseless"
         
         smcirc = self.grow_3u5r() #unitary encoder has first two steps

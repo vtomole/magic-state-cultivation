@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import stim
 from ._layer_translate import to_z_basis_interaction_circuit, to_optimized_circuit
-from._noise import GidneyNoiseModel
+from ._noise import GidneyNoiseModel
 
 
 def set_unique(llst):

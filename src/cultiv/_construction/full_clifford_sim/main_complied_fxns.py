@@ -63,7 +63,7 @@ def full_circuit(nm: float,
             
         
     if ps_on_d3 == 1: # we might choose to PS on Reg(3)
-        stay_ps =  rsc.cstage_circ.d3reg_stabmsmt()
+        stay_ps =  rsc.cstage_circ.d3_rotated_to_d5_stabmsmt()
         rsc.qcircuit += insert_circuit_errs(stay_ps, nm,
                 valid = component_array[4], convert_nac=neutralatom)  
     elif ps_on_d3 == 2: #we might choose stab msmt on Rot(3)
