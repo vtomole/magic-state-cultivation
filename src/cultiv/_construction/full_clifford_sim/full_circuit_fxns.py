@@ -148,7 +148,7 @@ class FullCircuit:
     
     
     def cbasis_check(self) -> stim.Circuit:
-        "does a transvesral check using the GHZ state"
+        "does a transversal check using the GHZ state"
 
         if self.basis not in ["Y"]:
             raise ValueError(f"The basis {self.basis} is not supported")

@@ -439,7 +439,7 @@ class CultStage:
     
 
     def d3reg_stabmsmt(self) -> stim.Circuit:
-        "do stab msmt on d3 unrotated -> rn configured to be noiseless"
+        "do stab msmt on d3 unrotated -> right now configured to be noiseless"
         
         smcirc = self.grow_3u5r() #unitary encoder has first two steps
 
