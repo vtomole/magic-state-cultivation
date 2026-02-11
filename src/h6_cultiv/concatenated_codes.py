@@ -170,14 +170,7 @@ class Code36:
         
         return c
     
-    def create_magic_state(
-        self,
-        with_aux_stab: bool = False,
-        target_block=None,
-        resource_dstart: int = 2000,
-        resource_astart: int = 2500,
-        bell_detectors: bool = False,
-    ):
+    def create_magic_state(self, with_aux_stab:bool = False, add_observables:bool = True, target_block=None, resource_dstart:int = 2000, resource_astart:int = 2500):
         c = stim.Circuit()
         c += self.data_blocks[0].get_dist_circ(with_aux_stab=True)
         c += self.data_blocks[1].get_dist_circ(with_aux_stab=True)
@@ -197,7 +190,7 @@ class Code36:
                 resource_state_astart + self.size_of_unit_anc_block*i, 
                 self.p, self.m)
             resource_states.append(block)
-            c += block.get_dist_circ(with_aux_stab=(target_block is None))
+            c += block.get_dist_circ(with_aux_stab=True)
         
         c += self.data_blocks[2].hadamard()
         c += self.data_blocks[2].cnot(self.data_blocks[3])
@@ -221,16 +214,14 @@ class Code36:
         c += self.data_blocks[4].cnot(self.data_blocks[2])
         c += self.data_blocks[5].cnot(self.data_blocks[3])
         
-        qss = [self.data_blocks[0].qubits, self.data_blocks[1].qubits]
-        c.append("Depolarize1", [q for qs in qss for q in qs], self.m)
+        # TODO: Check if it should be 0/1 or 2/3
+        # qss = [self.data_blocks[2].qubits, self.data_blocks[3].qubits]
+        # c.append("Depolarize1", [q for qs in qss for q in qs], self.m)
 
         #We rotate all logical qubits to |0> by performing Ry(-pi/2) rotations
         for i in range(0,6):
             c += self.data_blocks[i].rypi2(resource_states[i])
-            # Skip resource stabilizers when used for Bell measurement (target_block),
-            # since these detectors can be non-deterministic in that mode.
-            if target_block is None:
-                c += resource_states[i].add_stabalizers()
+            c += resource_states[i].add_stabalizers()
 
         #Now we can measure the Z value into the aux blocks
         c += self.anc_blocks[0].hadamard()
@@ -257,9 +248,7 @@ class Code36:
         #We rotate all logical qubits back to |+> by performing Ry(+pi/2) rotations
         for i in range(0,6):
             c += self.data_blocks[i].rypi2(resource_states[i+6])
-            # Skip resource stabilizers when used for Bell measurement (target_block)
-            if target_block is None:
-                c += resource_states[i+6].add_stabalizers()
+            c += resource_states[i+6].add_stabalizers()  
 
         for anc in self.anc_blocks:
             c += anc.measure()
@@ -273,12 +262,10 @@ class Code36:
         for i in range(0, 6):
             c += self.data_blocks[i].hadamard()
             c += self.data_blocks[i].measure()
-            if target_block is None or bell_detectors:
-                c += self.data_blocks[i].add_stabalizers()
+            c += self.data_blocks[i].add_stabalizers()
 
-
-        # Skip Code36-level detectors/observables in Bell mode unless explicitly requested.
-        if target_block is not None and not bell_detectors:
+        # Skip stabilizer/observable checks when used for Bell measurement (target_block)
+        if target_block is not None:
             return c
 
         # --- Code36-level stabilizers & observables with resource corrections ---
@@ -341,26 +328,23 @@ class Code36:
         # aux1 Z_L1 (Bell pair reference arm, always |0>)
         c.append("DETECTOR", [stim.target_rec(-41), stim.target_rec(-39), stim.target_rec(-37)])
 
-        # Skip stabilizer/observable checks when used for Bell measurement (target_block)
-        if target_block is not None:
-            return c
-        
-        # Code36 observables (L0-L3)
-        obs_config = [
-            (0, [0, 2, 4], [0, 2, 4]),
-            (1, [0, 2, 4], [1, 3, 5]),
-            (2, [1, 3, 5], [0, 2, 4]),
-            (3, [1, 3, 5], [1, 3, 5]),
-        ]
-        for obs_idx, block_indices, qubit_indices in obs_config:
-            flag = 0 if qubit_indices == [0, 2, 4] else 1
-            targets = []
-            for i in block_indices:
-                offset = total_meas - i * self.size_of_unit_data_block
-                targets += self.data_blocks[i].z(offset, flag)
-            for j in block_indices:
-                targets += _res_rec(j, qubit_indices)
-            c.append("OBSERVABLE_INCLUDE", targets, obs_idx)
+        if add_observables:
+            # Code36 observables (L0-L3)
+            obs_config = [
+                (0, [0, 2, 4], [0, 2, 4]),
+                (1, [0, 2, 4], [1, 3, 5]),
+                (2, [1, 3, 5], [0, 2, 4]),
+                (3, [1, 3, 5], [1, 3, 5]),
+            ]
+            for obs_idx, block_indices, qubit_indices in obs_config:
+                flag = 0 if qubit_indices == [0, 2, 4] else 1
+                targets = []
+                for i in block_indices:
+                    offset = total_meas - i * self.size_of_unit_data_block
+                    targets += self.data_blocks[i].z(offset, flag)
+                for j in block_indices:
+                    targets += _res_rec(j, qubit_indices)
+                c.append("OBSERVABLE_INCLUDE", targets, obs_idx)
 
         return c
 
@@ -560,9 +544,20 @@ class Code216():
         
         return c
     
-    def decode_to_lower_level(self, with_stab: bool = True):
+    def decode_to_lower_level(self):
         # deocode block level: self.level-1 using decoding circuit
         c = stim.Circuit()
+
+        # c += self.data_blocks[0].cnot(self.anc_blocks[0])
+        # c += self.data_blocks[2].cnot(self.anc_blocks[1])
+        # c += self.data_blocks[0].cnot(self.data_blocks[1])
+        # c += self.data_blocks[2].cnot(self.data_blocks[3])
+        # c += self.data_blocks[0].cnot(self.data_blocks[4])
+        # c += self.data_blocks[2].cnot(self.data_blocks[5])
+        # c += self.data_blocks[0].cnot(self.data_blocks[5])
+        # c += self.data_blocks[2].cnot(self.data_blocks[4])
+        # c += self.data_blocks[0].cnot(self.anc_blocks[0])
+        # c += self.data_blocks[2].cnot(self.anc_blocks[1])
 
         c += self.data_blocks[2].cnot(self.anc_blocks[1])
         c += self.data_blocks[0].cnot(self.anc_blocks[0])
@@ -582,14 +577,15 @@ class Code216():
             c += anc.measure(with_stab=True)
             # add detectors for ancilla
             # if with_aux_stab:
-            if with_stab:
-                c += anc.add_stabalizers()
+            c += anc.add_stabalizers()
 
         for b in self.data_blocks[1:]:
-            c += b.measure(with_stab=with_stab)
-            if with_stab:
-                c += b.add_stabalizers()
+            c += b.measure(with_stab=True)
+            c += b.add_stabalizers()
         return c
         
 
         
+
+
+
