@@ -4,6 +4,7 @@ from qiskit.circuit.library import HGate, CXGate, SGate, CYGate
 from qiskit.circuit.equivalence_library import SessionEquivalenceLibrary as sel
 
 from mqt.core import load
+import numpy as np
 
 import stim
 
@@ -14,6 +15,31 @@ def calculate_movements_for_arch(arch, qc, compiler):
     return num_moves
 
 from qiskit import QuantumCircuit
+
+def remove_mid_circ_meas(qc: QuantumCircuit, return_meas_reset_moves: bool = False):
+    num_qubits = qc.num_qubits
+    moves = 0
+
+    new_qc = QuantumCircuit(num_qubits)
+
+    for instruction in qc:
+        name = instruction.operation.name
+        targets = [qc.find_bit(q).index for q in instruction.qubits]
+
+        if name == "reset":
+            moves += 1
+        elif name == "measure":
+            moves += 1
+        elif name == "barrier":
+            new_qc.barrier()
+        else:
+            new_qc.append(instruction.operation, targets)
+
+    if return_meas_reset_moves:
+        return new_qc, moves
+    return new_qc
+
+
 
 def stim_to_qiskit(stim_circuit: stim.Circuit, return_meas_reset_moves:bool = False) -> QuantumCircuit:
     num_qubits = stim_circuit.num_qubits
@@ -43,6 +69,12 @@ def stim_to_qiskit(stim_circuit: stim.Circuit, return_meas_reset_moves:bool = Fa
         elif name == "S_DAG":
             for t in targets:
                 qc.sdg(t.value)
+        elif name == "H_XY":
+            for t in targets:
+                qc.ry(np.pi/4, t.value)
+        elif name == "H_YZ":
+            for t in targets:
+                qc.ry(-np.pi/4, t.value)
         elif name == "T":
             for t in targets:
                 qc.t(t.value)
