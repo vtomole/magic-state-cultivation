@@ -31,7 +31,8 @@ def remove_mid_circ_meas(qc: QuantumCircuit, return_meas_reset_moves: bool = Fal
         elif name == "measure":
             moves += 1
         elif name == "barrier":
-            new_qc.barrier()
+            print("skipping barrier")
+            # new_qc.barrier()
         else:
             new_qc.append(instruction.operation, targets)
 
@@ -123,6 +124,8 @@ def stim_to_qiskit(stim_circuit: stim.Circuit, return_meas_reset_moves:bool = Fa
             #     qc.h(t.value)
             #     qc.s(t.value)
             #     meas_idx += 1
+            moves += 1
+        elif name == "MR":
             moves += 1
         elif name == "TICK":
             # qc.barrier()
