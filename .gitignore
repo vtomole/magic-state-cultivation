@@ -5,3 +5,6 @@ __pycache__/
 tmp.html
 tmp.svg
 tmp.csv
+.venv/
+.ipynb_checkpoints/
+*.egg-info/
