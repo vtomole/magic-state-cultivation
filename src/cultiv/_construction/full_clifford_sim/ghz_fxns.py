@@ -75,6 +75,7 @@ class GHZstate:
     
             ghz_circ.append("CNOT", [first_qub, last_qub+1])
             ghz_circ.append("I", self.ghz_qubs[1:])
+            ghz_circ.append("TICK")
             ghz_circ.append("M", last_qub+1)
             ghz_circ.append("TICK")
     

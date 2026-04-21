@@ -3,6 +3,7 @@ import stim
 from .coords import RotSurfCodeCoords
 from .ghz_fxns import GHZstate
 from .s3_fxns import CultStage
+import numpy as np
 
 @dataclass
 class FullCircuit:
@@ -147,8 +148,8 @@ class FullCircuit:
         return measCircuit
     
     
-    def cbasis_check(self) -> stim.Circuit:
-        "does a transversal check using the GHZ state"
+    def cbasis_check(self, incl_idles=True) -> stim.Circuit:
+        "does a transvesral check using the GHZ state"
 
         if self.basis not in ["Y"]:
             raise ValueError(f"The basis {self.basis} is not supported")
@@ -156,25 +157,46 @@ class FullCircuit:
         check_circ = stim.Circuit()
 
         gqs = self.ghzcirc.ghz_qubs
-        mqs = self.cstage_circ.mgrid_qubs
         aqs = self.cstage_circ.agrid_qubs
-        
+
         if self.glen==5:
-            cy_step1 = [gqs[0], mqs[0], gqs[2], mqs[4], gqs[4], mqs[8]]
+            # 25 Rot(5) data qubits in row-major order within the Reg(dx) grid
+            mqs = np.array([2*(r*self.dx + c) for r in range(5) for c in range(5)])
+
+            cy_step1 = [gqs[0], mqs[0], gqs[1], mqs[18], gqs[2], mqs[6], gqs[3], mqs[24], gqs[4], mqs[12]]
             check_circ.append("CY", cy_step1)
             check_circ.append("TICK")
 
-            cy_step2 = [gqs[1], mqs[3], gqs[3], mqs[6], gqs[4], mqs[7]]
+            cy_step2 = [gqs[0], mqs[11], gqs[2], mqs[17], gqs[3], mqs[5], gqs[4], mqs[23]]
             check_circ.append("CY", cy_step2)
             check_circ.append("TICK")
 
-            cy_step3 = [gqs[1], mqs[1], gqs[3], mqs[2], gqs[4], mqs[5]]
+            cy_step3 = [gqs[0], mqs[10], gqs[1], mqs[15], gqs[2], mqs[16], gqs[3], mqs[21], gqs[4], mqs[22]]
             check_circ.append("CY", cy_step3)
+            check_circ.append("TICK")
+
+            cy_step4 = [gqs[2], mqs[20]]
+            check_circ.append("CY", cy_step4)
+            check_circ.append("TICK")
+
+            cy_step5 = [gqs[0], mqs[7], gqs[2], mqs[13], gqs[3], mqs[1], gqs[4], mqs[19]]
+            check_circ.append("CY", cy_step5)
+            check_circ.append("TICK")
+
+            cy_step6 = [gqs[0], mqs[2], gqs[1], mqs[3], gqs[2], mqs[8], gqs[3], mqs[9], gqs[4], mqs[14]]
+            check_circ.append("CY", cy_step6)
+            check_circ.append("TICK")
+
+            cy_step7 = [gqs[2], mqs[4]]
+            check_circ.append("CY", cy_step7)
             check_circ.append("TICK")
             
         elif self.glen==3:
+            # 9 Reg(3) data qubits in the Reg(dx) grid (stride 2*dx between rows)
+            mqs = self.cstage_circ.mgrid_qubs
             cy_step1 = [gqs[0], mqs[0], gqs[1], mqs[5], gqs[2], mqs[8]]
             check_circ.append("CY", cy_step1)
+            if incl_idles: check_circ.append("I", aqs)
             check_circ.append("TICK")
 
             cy_step2 = [gqs[0], mqs[3], gqs[1], mqs[6], gqs[2], mqs[7]]
@@ -187,7 +209,9 @@ class FullCircuit:
 
         return check_circ 
     
-
+    def update_ghz_circ(self, ghz_circ, glen):
+        self.ghzcirc = ghz_circ
+        self.glen = glen
 
     def __post_init__(self):
 

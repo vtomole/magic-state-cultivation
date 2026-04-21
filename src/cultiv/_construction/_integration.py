@@ -14,6 +14,7 @@ from ._injection_stage import injection_circuit_with_rewritten_injection_rotatio
 from ._surface_code import make_surface_code_idle_chunk, make_surface_code
 
 from .full_clifford_sim.main_complied_fxns import full_circuit
+from .full_clifford_sim.main_compiled_fxns_fault5 import full_circuit_f5
 
 def make_escape_to_big_matchable_code_circuit(
         *,
@@ -184,15 +185,22 @@ def make_surface_code_memory_circuit(*, dsurface: int, rounds: int, basis: Liter
 
 def make_folded_transversal_circuit(
         noise_strength: float,
-        dfinal: int = 9,
-        ghz_size: int = 3,
-        latter_rounds: int = 3,
+        dfinal: int = 13,
         prep: str = "hookinj",
-        ps_on_d3: int = 1
+        fault_distance = 3
     ) -> stim.Circuit:
-    return full_circuit(noise_strength, 
+    # ps_on_d3: int = 1 
+    # Postselect on Reg(3) provides the lowest ler and SOTA (Ref: section4)
+    if fault_distance == 5:
+        return full_circuit_f5(noise_strength, 
                         dfinal=dfinal, 
-                        ghz_size = ghz_size,
-                        latter_rounds=latter_rounds, 
-                        prep=prep, 
-                        ps_on_d3=ps_on_d3)
+                        ghz_size = 3,
+                        latter_rounds=3, 
+                        prep="hookinj")
+    else:
+       return full_circuit(noise_strength, 
+                dfinal=dfinal, 
+                ghz_size = 3,
+                latter_rounds=3, 
+                prep=prep, 
+                ps_on_d3=1) 

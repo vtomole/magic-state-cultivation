@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import stim
-import numpy as np
 from itertools import chain
+import numpy as np
 
 def flatten(xss):
     return [x for xs in xss for x in xs]
@@ -197,6 +197,53 @@ class CultStage:
         gcirc.append("TICK")
 
         return gcirc
+
+    def d5_rot_to_reg(self) -> stim.Circuit:
+        "rotated to regular d5 SC"
+        # step1: change face qubits to data qubits
+        # step2: (round1 cnot) apply cnot face qubit is target(control) to northeast qubit
+        # step3: (round2 cnot) apply cnot face qubit is target(control) to southeast qubit
+        gcirc = stim.Circuit()
+        mainqubs = np.array([2*(r*self.dx + c) for r in range(5) for c in range(5)])
+        altqubs  = np.array([2*((r+1)*(self.dx+1) + (c+1)) + 1 for r in range(4) for c in range(4)])
+
+        # helpers to index the 5x5 and 4x4 grids
+        def m(r, c):
+            return mainqubs[5*r + c]
+        def a(r, c):
+            return altqubs[4*r + c]
+        
+        # Partition faces by type: X-type (even parity) vs Z-type (odd parity)
+        x_faces = [(r, c) for r in range(4) for c in range(4) if (r + c) % 2 == 0]
+        z_faces = [(r, c) for r in range(4) for c in range(4) if (r + c) % 2 == 1]
+        
+        # Step 1: reset all face (alt) qubits, put X-faces in |+>
+        gcirc.append("R", list(altqubs))
+        gcirc.append("TICK")
+        gcirc.append("H", [a(r, c) for (r, c) in x_faces])
+        gcirc.append("TICK")
+        
+        # Round 1 CNOTs: face <-> NW data neighbor
+        # X-face is CONTROL (face -> data), Z-face is TARGET (data -> face)
+        round1 = []
+        for (r, c) in x_faces:
+            round1 += [a(r, c), m(r, c)]          # face -> NW data
+        for (r, c) in z_faces:
+            round1 += [m(r, c), a(r, c)]          # NW data -> face
+        gcirc.append("CNOT", round1)
+        gcirc.append("TICK")
+        
+        # Round 2 CNOTs: face <-> the "other diagonal" data neighbor
+        # Matching d=3: X-face couples to NE data (control), Z-face couples to SW data (target)
+        round2 = []
+        for (r, c) in x_faces:
+            round2 += [a(r, c), m(r, c + 1)]      # face -> NE data
+        for (r, c) in z_faces:
+            round2 += [m(r + 1, c), a(r, c)]      # SW data -> face
+        gcirc.append("CNOT", round2)
+        gcirc.append("TICK")
+        
+        return gcirc
     
 
     def d3rot_hookinj(self, skip_gauge_fix: bool = False) -> stim.Circuit:
@@ -297,7 +344,7 @@ class CultStage:
     
 
     def d3_rotmeas(self, prev=False, onlylasttwo:bool=False) -> stim.Circuit:
-        "do the first 2 steps of stabilizer measurement at rot 3 and then you are in reg 3"
+        "do stab meas at rot 3 and then grow to reg 3"
 
         hi_circ = stim.Circuit()
         bdry_ancillas = self.bdry_ancillas
@@ -438,8 +485,8 @@ class CultStage:
         return hi_circ
     
 
-    def d3_rotated_to_d5_stabmsmt(self) -> stim.Circuit:
-        "do stab msmt on d3 unrotated -> right now configured to be noiseless"
+    def d3reg_stabmsmt(self) -> stim.Circuit:
+        "do stab msmt on d3 unrotated -> rn configured to be noiseless"
         
         smcirc = self.grow_3u5r() #unitary encoder has first two steps
 
