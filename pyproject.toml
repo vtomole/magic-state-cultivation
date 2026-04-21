@@ -22,7 +22,7 @@ dependencies = [
     "sinter",
     "stim"
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.7"
 
 [project.optional-dependencies]
 dev = ["pytest"]
