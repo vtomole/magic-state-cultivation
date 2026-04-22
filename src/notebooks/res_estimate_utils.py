@@ -16,23 +16,31 @@ def calculate_movements_for_arch(arch, qc, compiler):
 
 from qiskit import QuantumCircuit
 
-def remove_mid_circ_meas(qc: QuantumCircuit, return_meas_reset_moves: bool = False):
-    num_qubits = qc.num_qubits
+def remove_access_resources(qc: QuantumCircuit, return_meas_reset_moves: bool = False):
     moves = 0
-
-    new_qc = QuantumCircuit(num_qubits)
+    active_qubits = sorted({
+        qc.find_bit(q).index
+        for instruction in qc
+        if instruction.operation.name not in ("barrier",)
+        for q in instruction.qubits
+    })
+    print(active_qubits)
+    qubit_map = {q: i for i, q in enumerate(active_qubits)}
+    new_qc = QuantumCircuit(len(active_qubits))
 
     for instruction in qc:
         name = instruction.operation.name
-        targets = [qc.find_bit(q).index for q in instruction.qubits]
 
         if name == "reset":
             moves += 1
         elif name == "measure":
             moves += 1
         elif name == "barrier":
-            new_qc.barrier()
+            # print("skipping barrier")
+            # new_qc.barrier()
+            continue
         else:
+            targets = [qubit_map[qc.find_bit(q).index] for q in instruction.qubits]
             new_qc.append(instruction.operation, targets)
 
     if return_meas_reset_moves:
