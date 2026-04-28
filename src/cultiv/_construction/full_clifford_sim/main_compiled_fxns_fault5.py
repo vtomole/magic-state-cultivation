@@ -108,7 +108,7 @@ def full_circuit_f5(nm: float,
 
     #5. add logical msmt
     rsc.qcircuit += rsc.logYMeas()
-    print(len(rsc.qcircuit.shortest_graphlike_error()))
+    #print(len(rsc.qcircuit.shortest_graphlike_error()))
 
     return rsc.qcircuit
 
