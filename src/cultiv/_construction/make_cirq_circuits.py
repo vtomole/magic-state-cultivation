@@ -8,8 +8,6 @@ from cultiv._construction.full_clifford_sim.main_compiled_fxns_fault5 import ful
 from cultiv._construction.full_clifford_sim.main_complied_fxns import full_circuit
 
 import sys
-#sys.path.append('../MSC_foldedH/src/full_clifford_sim/')
-#from cirq_utilities import remove_QCs
 
 
 def make_stim_circuit(code_distance: int, fault_distance: int):
@@ -19,7 +17,6 @@ def make_stim_circuit(code_distance: int, fault_distance: int):
 		stim_circuit = full_circuit(nm=.001, prep='hookinj', dfinal=code_distance, cultiv_only=False).without_noise()
 	else:
 		raise ValueError
-#	stim_rep = remove_QCs(stim_circuit, 0.001, reverse_Y=False).without_noise()
 	stim_rep = stim_circuit.with_inlined_feedback()
 	return stim_rep
 
