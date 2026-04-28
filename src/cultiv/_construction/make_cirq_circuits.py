@@ -8,8 +8,8 @@ from cultiv._construction.full_clifford_sim.main_compiled_fxns_fault5 import ful
 from cultiv._construction.full_clifford_sim.main_complied_fxns import full_circuit
 
 import sys
-sys.path.append('../MSC_foldedH/src/full_clifford_sim/')
-from cirq_utilities import remove_QCs
+#sys.path.append('../MSC_foldedH/src/full_clifford_sim/')
+#from cirq_utilities import remove_QCs
 
 
 def make_stim_circuit(code_distance: int, fault_distance: int):
@@ -19,8 +19,8 @@ def make_stim_circuit(code_distance: int, fault_distance: int):
 		stim_circuit = full_circuit(nm=.001, prep='hookinj', dfinal=code_distance, cultiv_only=False).without_noise()
 	else:
 		raise ValueError
-	stim_rep = remove_QCs(stim_circuit, 0.001, reverse_Y=False).without_noise()
-	stim_rep = stim_rep.with_inlined_feedback()
+#	stim_rep = remove_QCs(stim_circuit, 0.001, reverse_Y=False).without_noise()
+	stim_rep = stim_circuit.with_inlined_feedback()
 	return stim_rep
 
 def make_cirq_circuit(code_distance: int, fault_distance: int):
@@ -108,8 +108,6 @@ def dirty_count(circuit: cirq.Circuit):
             cirq.CNOT: cirq.CZ,
             (cirq.T**-1): cirq.PhasedXZGate,
             }
-    print(serial)
-    print(parallel)
     for key, val in op_map.items():
         serial[val] += serial[key]
         del serial[key]
@@ -121,22 +119,9 @@ if __name__ == "__main__":
     print(sys.argv)
     cd = int(sys.argv[1])
     fd = int(sys.argv[2])
-    start = int(sys.argv[3])
-    stop = int(sys.argv[4])
     circuit = make_cirq_circuit(code_distance=cd, fault_distance=fd)
-#    print(circuit[start:stop])
-#    for moment in circuit[start:stop]:
-#        gates = [op.gate for op in moment.operations if op not in cirq.GateFamily(cirq.I)]
-#        print(*gates)
-#        print("*"*90)
     result = dirty_count(circuit)
     print(f"Serial:\n\t{result['serial']}")
     print(sum(result['serial'].values()), len([op for op in circuit.all_operations()]))
     print(f"Parallel:\n\t{result['parallel']}")
     print(sum(result['parallel'].values()), len(circuit))
-#    exit()
-    import sys
-    sys.path.append('../resource-estimation/scripts/')
-    from cultivate_json import format_cost_dict
-    cost_dict = format_cost_dict(result)
-    print(cost_dict)

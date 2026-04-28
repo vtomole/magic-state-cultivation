@@ -33,4 +33,5 @@ from ._construction import (
     make_color_code_grown_into_surface_code_then_ablated_into_matchable_code_full_edges,
     make_surface_code_cnot,
     make_folded_transversal_circuit,
+    make_cirq_circuits,
 )
