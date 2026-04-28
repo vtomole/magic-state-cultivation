@@ -136,7 +136,7 @@ def full_circuit(nm: float,
         #add logical msmt
         if not handoff:
             rsc.qcircuit += rsc.logYMeas()
-            print(len(rsc.qcircuit.shortest_graphlike_error()))
+            #print(len(rsc.qcircuit.shortest_graphlike_error()))
         else:
             #add logical msmt (stim 1.15)
             z_targs = [2*i for i in range(0,rsc.dx)]
