@@ -20,3 +20,4 @@ from ._integration import (
     make_folded_transversal_circuit,
 )
 from ._surface_code_cnot import make_surface_code_cnot
+from . import make_cirq_circuits

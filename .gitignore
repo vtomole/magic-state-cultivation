@@ -1,4 +1,7 @@
 .idea/
+.venv
+build/
+.ipynb_checkpoints/
 out/
 __pycache__/
 .pytest_cache/
@@ -7,3 +10,5 @@ tmp.svg
 tmp.csv
 
 .DS_Store
+*.egg-info/
+*.egg-info

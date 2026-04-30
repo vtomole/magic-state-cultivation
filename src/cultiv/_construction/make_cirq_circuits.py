@@ -1,3 +1,4 @@
+
 import cultiv
 import stimcirq
 import cirq
@@ -8,7 +9,28 @@ from cultiv._construction.full_clifford_sim.main_compiled_fxns_fault5 import ful
 from cultiv._construction.full_clifford_sim.main_complied_fxns import full_circuit
 
 import sys
-
+def measurement_moment_count(circuit: cirq.Circuit):
+	"""
+	Returns a tuple (num_cirq_moments, num_stimcirq_moments) where:
+	  - num_cirq_moments: number of moments containing cirq.MeasurementGate
+	  - num_stimcirq_moments: number of moments containing stimcirq.MeasureAndOrResetGate
+	"""
+	num_cirq_moments = 0
+	num_stimcirq_moments = 0
+	for moment in circuit:
+		has_cirq_meas = any(
+			hasattr(op, 'gate') and isinstance(op.gate, cirq.MeasurementGate)
+			for op in moment.operations
+		)
+		has_stim_meas = any(
+			hasattr(op, 'gate') and isinstance(op.gate, stimcirq.MeasureAndOrResetGate)
+			for op in moment.operations
+		)
+		if has_cirq_meas:
+			num_cirq_moments += 1
+		if has_stim_meas:
+			num_stimcirq_moments += 1
+	return num_cirq_moments, num_stimcirq_moments
 
 def make_stim_circuit(code_distance: int, fault_distance: int):
 	if fault_distance == 5:
