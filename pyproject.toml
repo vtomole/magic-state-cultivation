@@ -20,7 +20,8 @@ dependencies = [
     "pygltflib",
     "scipy",
     "sinter",
-    "stim"
+    "stim",
+    "stimcirq ~= 1.15.0",
 ]
 requires-python = ">=3.7"
 
