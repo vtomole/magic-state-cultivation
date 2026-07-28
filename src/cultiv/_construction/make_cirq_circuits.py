@@ -63,7 +63,7 @@ def make_cirq_circuit(code_distance: int, fault_distance: int):
 				1, rs=np.array([True, False]), xs=np.array([[True], [True]]), zs=np.array([[False], [True]]))):
 				new_moment.append(cirq.PhasedXPowGate(phase_exponent=3/4, exponent=1/2).on(op.qubits[0]))
 
-			elif op.gate == cirq.ControlledGate(cirq.Y): #add a CH gate layer
+			elif op.gate == cirq.ControlledGate(cirq.Y) or op.gate == cirq.CY: #add a CH gate layer
 				if this_moment_is_CY:
 					pass # print(f"{op} at moment {midx} is removed")
 				else:
