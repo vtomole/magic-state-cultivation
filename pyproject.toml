@@ -18,10 +18,10 @@ dependencies = [
     "numpy",
     "pymatching",
     "pygltflib",
-    "pytest",
     "scipy",
     "sinter",
-    "stim"
+    "stim",
+    "stimcirq ~= 1.15.0",
 ]
 requires-python = ">=3.7"
 

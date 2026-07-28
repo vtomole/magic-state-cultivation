@@ -17,5 +17,7 @@ from ._integration import (
     make_escape_to_big_color_code_circuit,
     make_surface_code_memory_circuit,
     make_post_escape_matchable_code,
+    make_folded_transversal_circuit,
 )
 from ._surface_code_cnot import make_surface_code_cnot
+from . import make_cirq_circuits
