@@ -1,6 +1,6 @@
 import io
 import pathlib
-from typing import Callable, Any, TypeVar, Iterable
+from typing import Any, Callable, Iterable, TypeVar
 
 
 def write_file(path: str | pathlib.Path | io.IOBase, content: Any):
@@ -11,7 +11,7 @@ def write_file(path: str | pathlib.Path | io.IOBase, content: Any):
     path.parent.mkdir(exist_ok=True, parents=True)
     if isinstance(content, bytes):
         with open(path, "wb") as f:
-            print(content, file=f)
+            f.write(content)
     else:
         with open(path, "w") as f:
             print(content, file=f)

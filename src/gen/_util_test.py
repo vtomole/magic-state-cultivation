@@ -1,4 +1,13 @@
-from gen._util import xor_sorted
+from gen._util import write_file, xor_sorted
+
+
+def test_write_file_preserves_bytes(tmp_path):
+    content = b"\x00\x01\xffbinary-content"
+    path = tmp_path / "payload.bin"
+
+    write_file(path, content)
+
+    assert path.read_bytes() == content
 
 
 def test_xor_sorted():
