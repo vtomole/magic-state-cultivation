@@ -163,10 +163,10 @@ def split_by_custom_count(
             k, v = key.split('=')
             try:
                 v = int(v)
-            except TypeError:
+            except (TypeError, ValueError):
                 try:
                     v = float(v)
-                except TypeError:
+                except (TypeError, ValueError):
                     pass
             result.append(stat.with_edits(json_metadata={**stat.json_metadata, k: v, 'hits': count}, strong_id=stat.strong_id + f'{k},{v}'))
     return result
